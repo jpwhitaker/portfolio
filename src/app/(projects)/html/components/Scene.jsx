@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from "react";
-import { OrbitControls, Box, Sphere, useHelper, Clouds, Cloud } from "@react-three/drei";
+import { OrbitControls, Box, Sphere, useHelper, Clouds, Cloud, ContactShadows } from "@react-three/drei";
 import { extend, useFrame, useLoader } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { Blades } from "./Blades";
 import { Tower } from "./Tower";
-import { DirectionalLightHelper, CameraHelper, MeshBasicMaterial, TextureLoader, RepeatWrapping } from "three";
+import { DirectionalLightHelper, CameraHelper, MeshBasicMaterial, TextureLoader, RepeatWrapping, MathUtils } from "three";
 import { useSpring, animated } from 'react-spring';
 
 
@@ -15,29 +15,36 @@ export default function Scene() {
   const cloud1Ref = useRef();
   const cloud2Ref = useRef();
   const cloud3Ref = useRef();
-  const directionalLightRef = useRef()
-  // useHelper(directionalLightRef, DirectionalLightHelper, 1, "red")
-
 
   const { speed } = useControls({ speed: { label: "Wind", value: 1, min: 1, max: 10, step: 1 } });
-  const reducedSpeed = 1 + ((speed - 1) * (5 - 1)) / (10 - 1);
-  //I dunno, shit looks kinda choppy.
-  //also i think the wind should start up and then the blades should speed up.
-  const animatedProps = useSpring({ to: { reducedSpeed }, config: { mass: 1, tension: 280, friction: 180 } });
+  const [delayedSpeed, setDelayedSpeed] = useState(speed);
+  const [windSpeed, setWindSpeed] = useState(speed);
+  const [bladeSpeed, setBladeSpeed] = useState(1);
 
+  useEffect(() => {
+    // Schedule the setTimeout
+    const timeoutId = setTimeout(() => {
+      console.log('increase blade speed');
+      setDelayedSpeed(speed);
+    }, 2000);
 
+    // Cleanup function to clear the timeout if the effect re-runs or component unmounts
+    return () => clearTimeout(timeoutId);
+  }, [speed]);
 
   useFrame((state, delta) => {
-    const springSpeed = animatedProps.reducedSpeed.get();
-    console.log(springSpeed)
+    const newWindSpeed = MathUtils.lerp(windSpeed, speed, 0.01);
+    const newBladeSpeed = MathUtils.lerp(bladeSpeed, delayedSpeed, 0.005);
+    setWindSpeed(newWindSpeed);
+    setBladeSpeed(newBladeSpeed);
+
     if (bladesGroupRef1.current && bladesGroupRef2.current) {
-      // Adjust rotation based on the delta time
-      bladesGroupRef1.current.rotation.z += (springSpeed * 1) * delta;
-      bladesGroupRef2.current.rotation.z += (springSpeed * 0.8) * delta;
+      bladesGroupRef1.current.rotation.z += (newBladeSpeed * 1) * delta;
+      bladesGroupRef2.current.rotation.z += (newBladeSpeed * 0.8) * delta;
     }
 
-    [cloud1Ref, cloud3Ref].forEach(cloudRef => {
-      cloudRef.current.position.x -= springSpeed / 200; // Adjust the speed if needed
+    [cloud1Ref, cloud2Ref, cloud3Ref].forEach(cloudRef => {
+      cloudRef.current.position.x -= newWindSpeed / 200; // Adjust the speed if needed
       if (cloudRef.current.position.x < -20) {
         cloudRef.current.position.x = 20;
       }
@@ -69,7 +76,7 @@ export default function Scene() {
       {/* <directionalLight position={[5, 5, 0]} intensity={10} ref={directionalLightRef} castShadow /> */}
       <DirectionalLight position={[5, 5, 0]} intensity={10} />
 
-      <ImageSphere/>
+      <ImageSphere />
       <Sphere
         args={[2, 32, 32, 0, Math.PI * 0.5]}
         rotation-x={-90 * Math.PI / 180}
@@ -81,10 +88,12 @@ export default function Scene() {
         <meshStandardMaterial attach="material" color="green" />
       </Sphere>
 
-      <Clouds material={MeshBasicMaterial} >
+      <Clouds material={MeshBasicMaterial} castShadow >
+        <Cloud ref={cloud3Ref} seed={3} opacity={0.2} segments={20} bounds={[5, 1, 2]} volume={1} color="white" position={[-7, 1, -4]} speed={0.11} />
+        <Cloud ref={cloud2Ref} seed={2} opacity={0.3} segments={20} bounds={[5, 1, 2]} volume={1} color="white" position={[4, 1, -5]} speed={0.11} />
         <Cloud ref={cloud1Ref} opacity={0.2} seed={1} segments={20} bounds={[5, 1, 2]} volume={1} color="white" position={[15, 2, 0]} speed={0.11} />
-        {/* <Cloud ref={cloud2Ref} seed={2} opacity={0.5} segments={20} bounds={[5, 1, 2]} volume={1} color="white" position={[8,1,-5]} speed={0.11} /> */}
-        <Cloud ref={cloud3Ref} seed={3} opacity={0.2} segments={20} bounds={[5, 1, 2]} volume={1} color="white" position={[0, 1, -4]} speed={0.11} />
+
+
       </Clouds>
 
 
@@ -109,7 +118,7 @@ function DirectionalLight({ position }) {
         ref={set}
         position={position}
         castShadow
-        intensity={10}
+        intensity={5}
         shadow-mapSize-height={1000}
         shadow-mapSize-width={1000}
         // shadow-camera-top={40}
@@ -118,7 +127,13 @@ function DirectionalLight({ position }) {
         target={targetGroup.current}
         shadow-radius={14}
         shadow-blurSamples={6}
-        shadow-bias={-0.002}
+        shadow-bias={0}
+      />
+      <directionalLight
+        color={"#dbeafe"}
+        ref={set}
+        position={position}
+        intensity={5}
       />
       {helper && light && <cameraHelper args={[light.shadow.camera]} />}
       <group position={[0, 0, 0]} ref={targetGroup} />
