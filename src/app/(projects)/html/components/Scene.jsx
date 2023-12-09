@@ -12,9 +12,9 @@ import {Windmills} from "./Windmills";
 
 
 
-export default function Scene({speed}) {
+export default function Scene({speed, bladeSpeedRef}) {
 
-
+  
   //OK we have Speed, which comes from Leva, cloud uses this directly
 
   
@@ -23,7 +23,7 @@ export default function Scene({speed}) {
     <>
       <OrbitControls />
       <ambientLight intensity={1} />
-      <Windmills speed={speed}/>
+      <Windmills bladeSpeedRef={bladeSpeedRef} />
       <LightAndHelper position={[5, 5, 0]} intensity={5} />
       <Ground/>
       <CloudLayer speed={speed} />
