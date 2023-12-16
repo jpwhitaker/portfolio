@@ -16,7 +16,7 @@ export default function CanvasWrapper() {
 
   return (
     <div id="canvas-container" className="h-full text-white bg-blue-300 relative">
-      <Canvas ref={canvasRef} shadows camera={{ position: [0, 0, 5], fov: 30 }} shadowmap={{ type: VSMShadowMap }}>
+      <Canvas ref={canvasRef} shadows camera={{ position: [0, 0, 7], fov: 30 }} shadowmap={{ type: VSMShadowMap }}>
         <group>
           <Scene />
         </group>

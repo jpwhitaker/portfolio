@@ -98,4 +98,6 @@ void main() {
     // Noise [-1..+1] -> color
   float intensity = exp(w * 3.0 - 0.5);
   gl_FragColor = vec4(mix(vec3(0.5, 0.5, 0.5), vec3(1.0, 1.0, 1.0), intensity), 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
 }
