@@ -30,8 +30,8 @@ export default function Scene() {
 
   useFrame((state) => {
     const { gl, clock } = state;
-    // debugger
-    fsQuad.material.uniforms.u_time.value = clock.getElapsedTime();
+    //reset timer every 500s because artifacting starts to occur.
+    fsQuad.material.uniforms.u_time.value = clock.getElapsedTime() % 500;
     gl.setRenderTarget(renderTarget);
     if (fsQuad && fsQuad.render) {
       // needs to be in an arrow function for this to work.
