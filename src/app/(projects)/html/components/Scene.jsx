@@ -21,7 +21,7 @@ export default function Scene({speed, bladeSpeedRef}) {
 
   return (
     <>
-      <OrbitControls />
+      {/* <OrbitControls /> */}
       <ambientLight intensity={1} />
       <Windmills bladeSpeedRef={bladeSpeedRef} />
       <LightAndHelper position={[5, 5, 0]} intensity={5} />
