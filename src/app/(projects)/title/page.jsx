@@ -2,7 +2,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Box, OrbitControls, Text3D } from "@react-three/drei";
 
-export const Title = () => {
+export default function Title() {
   return (
     <div className="mx-auto max-w-7xl h-96 bg-white-300 relative">
     <Canvas className="border-2 border-indigo-500 " >
